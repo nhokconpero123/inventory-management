@@ -1,0 +1,11 @@
+{
+  "name": "inventory-management",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "dev": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "test": "npm test -w server",
+    "seed": "npm run seed -w server"
+  }
+}
