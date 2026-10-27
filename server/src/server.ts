@@ -1,9 +1,11 @@
+import 'dotenv/config';
 import { openDb, applySchema } from './db/connection';
 import { createApp } from './app';
+import { jwtSecret } from './config';
+
+jwtSecret(); // báo lỗi ngay lúc khởi động nếu thiếu JWT_SECRET
 
 const db = openDb();
-
-// DB trống (lần chạy đầu) thì tạo bảng
 const hasTables = db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'users'").get();
 if (!hasTables) applySchema(db);
 
