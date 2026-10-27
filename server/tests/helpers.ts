@@ -32,3 +32,14 @@ export function authHeader(role: 'admin' | 'staff', id = 1) {
   const token = jwt.sign({ role }, process.env.JWT_SECRET!, { subject: String(id), expiresIn: '1h' });
   return `Bearer ${token}`;
 }
+
+/** Tạo sản phẩm trực tiếp trong DB cho test (bỏ qua API vì Bước 7 mới làm). Trả về id. */
+export function addProduct(
+  db: Database.Database,
+  o: { sku?: string; name?: string; quantity?: number; min?: number; isActive?: 0 | 1 } = {},
+) {
+  const r = db
+    .prepare('INSERT INTO products (sku, name, quantity, min_quantity, is_active) VALUES (?, ?, ?, ?, ?)')
+    .run(o.sku ?? 'A1', o.name ?? 'Test', o.quantity ?? 0, o.min ?? 0, o.isActive ?? 1);
+  return Number(r.lastInsertRowid);
+}
