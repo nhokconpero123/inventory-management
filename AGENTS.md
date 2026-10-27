@@ -29,3 +29,15 @@ ADJUST, products, categories, users: chỉ admin.
 
 ## Lệnh
 npm run dev | npm run dev:client | npm test | npm run seed
+
+## Quy tắc frontend (client/)
+- React + TypeScript + Tailwind + TanStack Query + react-router. KHÔNG thêm thư viện mới.
+- Mọi gọi API đi qua `api()` trong `client/src/api.ts`. Không dùng fetch trực tiếp.
+- Không sửa `api.ts`, `types.ts`, `auth-context.ts`, `AuthProvider.tsx`, `RouteGuards.tsx`.
+  Cần đổi thì nêu đề xuất.
+- Trang đặt ở `src/pages/`, component dùng lại ở `src/components/`. Mỗi tác vụ chỉ sửa file được nêu,
+  và chỉ thêm đúng một dòng route vào `App.tsx`.
+- Giao diện tiếng Việt, responsive (dùng được ở 375px). Luôn có trạng thái loading, rỗng, lỗi
+  (dùng `errorMessage()` để hiện lỗi).
+- Quyền ở UI chỉ để ẩn/hiện nút. Server mới là nơi kiểm tra quyền thật.
+- Lệnh kiểm tra trước khi báo xong: `npm run build -w client` và `npm run lint -w client`.
