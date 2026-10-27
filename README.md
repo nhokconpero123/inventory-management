@@ -14,10 +14,9 @@ Inventory management app: React, Express, SQLite, JWT roles
 
 Ứng dụng quản lý kho: theo dõi tồn kho theo sổ cái biến động, cảnh báo sắp hết hàng, phân quyền admin/staff.
 
-**Demo:** <link-cloudflare-pages>
+**Demo:** <https://inventory-management.nhokconpero123.workers.dev/>
 **Tài khoản:** `admin@demo.com` hoặc `staff@demo.com`, mật khẩu `Demo@12345`
 
-> Backend demo chạy trên gói miễn phí: lần truy cập đầu có thể chờ 30-60 giây, dữ liệu demo được reset khi máy chủ khởi động lại.
 
 ![Dashboard](docs/screenshots/dashboard.png)
 ![Sản phẩm](docs/screenshots/products.png)
