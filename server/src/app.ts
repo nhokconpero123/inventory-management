@@ -9,15 +9,15 @@ import { productsRouter } from './modules/products/products.routes';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes';
 import cors from 'cors';
 import helmet from 'helmet';
-/** Nhận DB từ bên ngoài để test dùng SQLite :memory:. Không gọi listen ở đây. */
+/** Accepts an external DB so tests can use SQLite :memory:. Does not call listen here. */
 export function createApp(db: Database.Database) {
   const app = express();
-    // Sau proxy của Render, cần tin X-Forwarded-For để rate limit đếm đúng IP người dùng
+    // Behind Render's proxy, trust X-Forwarded-For so rate limiting uses the correct client IP.
   if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
   app.use(helmet());
 
-  // CORS_ORIGIN: danh sách domain frontend được phép, ngăn cách bằng dấu phẩy. Để trống = không bật CORS
+  // CORS_ORIGIN: comma-separated list of allowed frontend domains. Leave empty to disable CORS.
   const origins = (process.env.CORS_ORIGIN ?? '').split(',').map((s) => s.trim()).filter(Boolean);
   if (origins.length) app.use(cors({ origin: origins }));
   app.use(express.json());
@@ -33,8 +33,8 @@ export function createApp(db: Database.Database) {
   app.use('/categories', categoriesRouter(db));
   app.use('/products', productsRouter(db));
   app.use('/dashboard', dashboardRouter(db));
-  app.use(movementsRouter(db)); // mount ở gốc, vì chứa nhiều đường dẫn
+  app.use(movementsRouter(db)); // Mounted at the root because it contains multiple paths.
 
-  app.use(errorHandler); // PHẢI đặt cuối cùng
+  app.use(errorHandler); // MUST be registered last.
   return app;
 }

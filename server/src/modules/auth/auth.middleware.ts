@@ -4,7 +4,7 @@ import { AppError } from '../../middleware/errors';
 import { jwtSecret } from '../../config';
 import type { Role } from '../users/users.repo';
 
-/** Xác thực JWT, gắn req.user. Sai/thiếu/hết hạn → 401. */
+/** Verifies the JWT and attaches req.user. Invalid, missing, or expired tokens return 401. */
 export const requireAuth: RequestHandler = (req, _res, next) => {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) throw new AppError('UNAUTHORIZED');
@@ -17,7 +17,7 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
   next();
 };
 
-/** Dùng SAU requireAuth. Không đủ quyền → 403. */
+/** Use after requireAuth. Insufficient permissions return 403. */
 export const requireRole =
   (...roles: Role[]): RequestHandler =>
   (req, _res, next) => {

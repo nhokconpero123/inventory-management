@@ -15,7 +15,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
   const { session } = useAuth();
   const isAdmin = session?.role === 'admin';
 
-  // Sinh MỘT lần mỗi khi mở modal và giữ nguyên khi bấm gửi lại
+  // Generate once when the modal opens and keep the key for retries.
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   const [type, setType] = useState<MovementType>('IN');
@@ -32,26 +32,26 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
 
     const parsedQty = parseInt(quantity, 10);
     if (Number.isNaN(parsedQty)) {
-      setError('Vui lòng nhập số lượng hợp lệ.');
+      setError('Please enter a valid quantity.');
       return;
     }
 
-    // IN/OUT: số nguyên dương
+    // IN/OUT: positive integers.
     if (type === 'IN' || type === 'OUT') {
       if (parsedQty <= 0) {
-        setError('Số lượng nhập/xuất phải là số nguyên dương lớn hơn 0.');
+        setError('Stock-in/out quantities must be positive integers greater than 0.');
         return;
       }
     }
 
-    // ADJUST: số nguyên có dấu khác 0
+    // ADJUST: signed integer other than 0.
     if (type === 'ADJUST') {
       if (parsedQty === 0) {
-        setError('Số lượng điều chỉnh phải là số nguyên khác 0.');
+        setError('Adjustment quantity must be an integer other than 0.');
         return;
       }
       if (!reason.trim()) {
-        setError('Lý do là bắt buộc khi điều chỉnh kho.');
+        setError('A reason is required for stock adjustments.');
         return;
       }
     }
@@ -71,7 +71,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
         },
       });
 
-      // Thành công thì invalidate query sản phẩm và dashboard rồi đóng modal
+      // On success, invalidate the product and dashboard queries, then close the modal.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['products'] }),
         queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
@@ -94,7 +94,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden my-8">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Biến động kho hàng</h2>
+            <h2 className="text-lg font-bold text-gray-900">Stock movement</h2>
             <p className="text-xs text-gray-500 mt-0.5">
               {product.name} ({product.sku})
             </p>
@@ -104,7 +104,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
             disabled={submitting}
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
-            aria-label="Đóng"
+            aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -112,10 +112,10 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
           </button>
         </div>
 
-        {/* Thông tin tồn kho hiện tại */}
+        {/* Current stock information */}
         <div className="px-6 pt-4 pb-1">
           <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-between text-sm">
-            <span className="text-gray-600 font-medium">Tồn kho hiện tại:</span>
+            <span className="text-gray-600 font-medium">Current stock:</span>
             <span
               className={`font-bold text-base ${
                 product.quantity <= product.min_quantity ? 'text-red-600' : 'text-gray-900'
@@ -143,10 +143,10 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
             </div>
           )}
 
-          {/* Chọn loại biến động */}
+          {/* Select movement type */}
           <div>
             <label htmlFor="movement-type" className="block text-sm font-medium text-gray-700 mb-1">
-              Loại biến động <span className="text-red-500">*</span>
+              Movement type <span className="text-red-500">*</span>
             </label>
             <select
               id="movement-type"
@@ -157,16 +157,16 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
               }}
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="IN">IN (Nhập kho)</option>
-              <option value="OUT">OUT (Xuất kho)</option>
-              {isAdmin && <option value="ADJUST">ADJUST (Điều chỉnh kho - Admin)</option>}
+              <option value="IN">IN (Stock In)</option>
+              <option value="OUT">OUT (Stock Out)</option>
+              {isAdmin && <option value="ADJUST">ADJUST (Adjustment - Admin)</option>}
             </select>
           </div>
 
-          {/* Số lượng */}
+          {/* Quantity */}
           <div>
             <label htmlFor="movement-qty" className="block text-sm font-medium text-gray-700 mb-1">
-              {type === 'ADJUST' ? 'Số lượng thay đổi (+ tăng, - giảm)' : 'Số lượng'} <span className="text-red-500">*</span>
+              {type === 'ADJUST' ? 'Quantity change (+ increase, - decrease)' : 'Quantity'} <span className="text-red-500">*</span>
             </label>
             <input
               id="movement-qty"
@@ -175,20 +175,20 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
               required
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              placeholder={type === 'ADJUST' ? 'VD: 5 hoặc -3' : 'VD: 10'}
+              placeholder={type === 'ADJUST' ? 'e.g. 5 or -3' : 'e.g. 10'}
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             {type === 'IN' || type === 'OUT' ? (
-              <p className="text-xs text-gray-400 mt-1">Nhập số nguyên dương (hệ thống tự tính biến động kho)</p>
+              <p className="text-xs text-gray-400 mt-1">Enter a positive integer (the system calculates the stock change)</p>
             ) : (
-              <p className="text-xs text-gray-400 mt-1">Nhập số nguyên có dấu khác 0 (VD: -5 để giảm kho, +5 để tăng kho)</p>
+              <p className="text-xs text-gray-400 mt-1">Enter a non-zero signed integer (e.g. -5 to decrease stock, +5 to increase stock)</p>
             )}
           </div>
 
-          {/* Lý do */}
+          {/* Reason */}
           <div>
             <label htmlFor="movement-reason" className="block text-sm font-medium text-gray-700 mb-1">
-              Lý do {type === 'ADJUST' ? <span className="text-red-500">* (bắt buộc)</span> : <span className="text-gray-400 font-normal">(tùy chọn)</span>}
+              Reason {type === 'ADJUST' ? <span className="text-red-500">* (required)</span> : <span className="text-gray-400 font-normal">(optional)</span>}
             </label>
             <input
               id="movement-reason"
@@ -196,7 +196,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
               required={type === 'ADJUST'}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder={type === 'ADJUST' ? 'VD: Kiểm kê định kỳ thấy thiếu hàng' : 'VD: Nhập hàng từ nhà cung cấp'}
+              placeholder={type === 'ADJUST' ? 'e.g. Inventory count found missing items' : 'e.g. Received stock from supplier'}
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -208,7 +208,7 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
@@ -221,9 +221,9 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                 </svg>
               )}
-              {type === 'IN' && (submitting ? 'Đang nhập kho...' : 'Xác nhận nhập kho')}
-              {type === 'OUT' && (submitting ? 'Đang xuất kho...' : 'Xác nhận xuất kho')}
-              {type === 'ADJUST' && (submitting ? 'Đang điều chỉnh...' : 'Xác nhận điều chỉnh')}
+              {type === 'IN' && (submitting ? 'Receiving stock...' : 'Confirm stock in')}
+              {type === 'OUT' && (submitting ? 'Removing stock...' : 'Confirm stock out')}
+              {type === 'ADJUST' && (submitting ? 'Adjusting...' : 'Confirm adjustment')}
             </button>
           </div>
         </form>
@@ -231,4 +231,3 @@ export default function MovementDialog({ open, onClose, product }: MovementDialo
     </div>
   );
 }
-

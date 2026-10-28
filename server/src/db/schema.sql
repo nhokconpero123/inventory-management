@@ -42,8 +42,8 @@ CREATE TABLE stock_movements (
 );
 CREATE INDEX idx_movements_product ON stock_movements(product_id, created_at);
 
--- Sổ cái bất biến: cấm sửa/xóa
+-- Immutable ledger: updates and deletes are prohibited.
 CREATE TRIGGER movements_no_update BEFORE UPDATE ON stock_movements
-BEGIN SELECT RAISE(ABORT, 'stock_movements là bất biến'); END;
+BEGIN SELECT RAISE(ABORT, 'stock_movements is immutable'); END;
 CREATE TRIGGER movements_no_delete BEFORE DELETE ON stock_movements
-BEGIN SELECT RAISE(ABORT, 'stock_movements là bất biến'); END;
+BEGIN SELECT RAISE(ABORT, 'stock_movements is immutable'); END;

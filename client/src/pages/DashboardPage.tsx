@@ -6,7 +6,7 @@ function formatDate(dateStr: string) {
   try {
     const d = new Date(dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
     if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleString('vi-VN', {
+    return d.toLocaleString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       day: '2-digit',
@@ -22,20 +22,20 @@ function MovementBadge({ type }: { type: MovementType }) {
   if (type === 'IN') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        IN (Nhập)
+        IN (Stock In)
       </span>
     );
   }
   if (type === 'OUT') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-        OUT (Xuất)
+        OUT (Stock Out)
       </span>
     );
   }
   return (
     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-      ADJUST (Điều chỉnh)
+      ADJUST (Adjustment)
     </span>
   );
 }
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
         </svg>
-        <p className="text-sm text-gray-500 font-medium">Đang tải dữ liệu tổng quan...</p>
+        <p className="text-sm text-gray-500 font-medium">Loading dashboard data...</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export default function DashboardPage() {
             />
           </svg>
           <div>
-            <h3 className="font-semibold text-sm">Không thể tải dữ liệu</h3>
+            <h3 className="font-semibold text-sm">Unable to load data</h3>
             <p className="text-sm mt-0.5">{errorMessage(error)}</p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
           onClick={handleRetry}
           className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
         >
-          Thử lại
+          Try again
         </button>
       </div>
     );
@@ -115,20 +115,20 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Tổng quan kho hàng</h1>
-        <p className="text-sm text-gray-500 mt-1">Theo dõi số lượng hàng tồn và các biến động gần nhất</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Inventory Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-1">Track stock levels and recent movements</p>
       </div>
 
-      {/* 2 Thẻ thống kê */}
+      {/* Two summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Thẻ 1: Tổng sản phẩm */}
+        {/* Card 1: Total products */}
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs sm:text-sm font-medium text-gray-500">Tổng sản phẩm</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">Total products</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
               {summary?.total_products ?? 0}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Sản phẩm đang kích hoạt</p>
+            <p className="text-xs text-gray-400 mt-1">Active products</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,10 +142,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Thẻ 2: Sắp hết hàng */}
+        {/* Card 2: Low stock */}
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs sm:text-sm font-medium text-gray-500">Sắp hết hàng</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500">Low stock</p>
             <p
               className={`text-2xl sm:text-3xl font-bold mt-1 ${
                 (summary?.low_stock_count ?? 0) > 0 ? 'text-red-600' : 'text-gray-900'
@@ -153,7 +153,7 @@ export default function DashboardPage() {
             >
               {summary?.low_stock_count ?? 0}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Tồn kho ≤ mức tối thiểu</p>
+            <p className="text-xs text-gray-400 mt-1">Stock ≤ minimum level</p>
           </div>
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
@@ -172,21 +172,21 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Bảng Sắp hết hàng */}
+      {/* Low stock table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h2 className="font-bold text-gray-900 text-base">Sắp hết hàng</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Danh sách các sản phẩm đang chạm hoặc dưới mức tối thiểu</p>
+            <h2 className="font-bold text-gray-900 text-base">Low stock</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Products at or below their minimum stock level</p>
           </div>
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-800">
-            {lowStockProducts.length} sản phẩm
+            {lowStockProducts.length} products
           </span>
         </div>
 
         {lowStockProducts.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-500">
-            Không có sản phẩm nào sắp hết hàng.
+            No products are low on stock.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -194,9 +194,9 @@ export default function DashboardPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-semibold border-b border-gray-200">
                 <tr>
                   <th scope="col" className="px-5 py-3">SKU</th>
-                  <th scope="col" className="px-5 py-3">Tên sản phẩm</th>
-                  <th scope="col" className="px-5 py-3">Tồn / Tối thiểu</th>
-                  <th scope="col" className="px-5 py-3">Trạng thái</th>
+                  <th scope="col" className="px-5 py-3">Product name</th>
+                  <th scope="col" className="px-5 py-3">Stock / Minimum</th>
+                  <th scope="col" className="px-5 py-3">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Sắp hết hàng
+                        Low stock
                       </span>
                     </td>
                   </tr>
@@ -222,27 +222,27 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Bảng 10 biến động gần nhất */}
+      {/* Table of the 10 most recent movements */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-200">
-          <h2 className="font-bold text-gray-900 text-base">10 biến động gần nhất</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Nhật ký các lần nhập, xuất và điều chỉnh kho</p>
+          <h2 className="font-bold text-gray-900 text-base">10 most recent movements</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Log of stock-in, stock-out, and adjustment operations</p>
         </div>
 
         {recentMovements.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-500">
-            Chưa có biến động kho nào.
+            No stock movements yet.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-semibold border-b border-gray-200">
                 <tr>
-                  <th scope="col" className="px-5 py-3">Loại</th>
-                  <th scope="col" className="px-5 py-3">Thay đổi</th>
-                  <th scope="col" className="px-5 py-3">Tồn sau</th>
-                  <th scope="col" className="px-5 py-3">Lý do</th>
-                  <th scope="col" className="px-5 py-3">Thời gian</th>
+                  <th scope="col" className="px-5 py-3">Type</th>
+                  <th scope="col" className="px-5 py-3">Change</th>
+                  <th scope="col" className="px-5 py-3">Stock after</th>
+                  <th scope="col" className="px-5 py-3">Reason</th>
+                  <th scope="col" className="px-5 py-3">Date and time</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -273,4 +273,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

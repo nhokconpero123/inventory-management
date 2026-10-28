@@ -21,7 +21,7 @@ export default function ProductsPage() {
   }>({ open: false, product: null });
   const [movementProduct, setMovementProduct] = useState<Product | null>(null);
 
-  // Debounce ô tìm kiếm 300ms, khi từ khóa thay đổi thì về trang 1
+  // Debounce the search field by 300 ms and return to page 1 when the query changes.
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch((prev) => {
@@ -34,7 +34,7 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Lấy danh mục
+  // Load categories.
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => api<Category[]>('/categories'),
@@ -46,7 +46,7 @@ export default function ProductsPage() {
     return map;
   }, [categories]);
 
-  // Lấy danh sách sản phẩm
+  // Load products.
   const {
     data: productsData,
     isLoading,
@@ -79,8 +79,8 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Danh sách sản phẩm</h1>
-          <p className="text-sm text-gray-500 mt-1">Quản lý và tra cứu thông tin tồn kho sản phẩm</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Products</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage and view product stock information</p>
         </div>
         {isAdmin && (
           <button
@@ -91,14 +91,14 @@ export default function ProductsPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Thêm sản phẩm</span>
+            <span>Add product</span>
           </button>
         )}
       </div>
 
-      {/* Bộ lọc */}
+      {/* Filters */}
       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center gap-3">
-        {/* Ô tìm kiếm */}
+        {/* Search field */}
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,12 +114,12 @@ export default function ProductsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên hoặc SKU..."
+            placeholder="Search by name or SKU..."
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
-        {/* Dropdown danh mục */}
+        {/* Category dropdown */}
         <div className="w-full md:w-56">
           <select
             value={selectedCategory}
@@ -129,7 +129,7 @@ export default function ProductsPage() {
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Tất cả danh mục</option>
+            <option value="">All categories</option>
             {categories?.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}
@@ -138,7 +138,7 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* Checkbox sắp hết hàng */}
+        {/* Low stock checkbox */}
         <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 font-medium py-1">
           <input
             type="checkbox"
@@ -149,11 +149,11 @@ export default function ProductsPage() {
             }}
             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
           />
-          <span>Sắp hết hàng</span>
+          <span>Low stock</span>
         </label>
       </div>
 
-      {/* Trạng thái lỗi */}
+      {/* Error state */}
       {isError && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
           <div className="flex items-start gap-2.5 text-red-700">
@@ -165,7 +165,7 @@ export default function ProductsPage() {
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-sm">Không thể tải danh sách sản phẩm</h3>
+              <h3 className="font-semibold text-sm">Unable to load products</h3>
               <p className="text-sm mt-0.5">{errorMessage(error)}</p>
             </div>
           </div>
@@ -174,28 +174,28 @@ export default function ProductsPage() {
             onClick={() => refetch()}
             className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
           >
-            Thử lại
+            Try again
           </button>
         </div>
       )}
 
-      {/* Trạng thái loading */}
+      {/* Loading state */}
       {isLoading && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
           <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
           </svg>
-          <p className="text-sm text-gray-500 font-medium">Đang tải danh sách sản phẩm...</p>
+          <p className="text-sm text-gray-500 font-medium">Loading products...</p>
         </div>
       )}
 
-      {/* Bảng sản phẩm */}
+      {/* Products table */}
       {!isLoading && !isError && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           {items.length === 0 ? (
             <div className="p-12 text-center text-sm text-gray-500">
-              Không tìm thấy sản phẩm nào.
+              No products found.
             </div>
           ) : (
             <>
@@ -204,11 +204,11 @@ export default function ProductsPage() {
                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-semibold border-b border-gray-200">
                     <tr>
                       <th scope="col" className="px-5 py-3">SKU</th>
-                      <th scope="col" className="px-5 py-3">Tên sản phẩm</th>
-                      <th scope="col" className="px-5 py-3">Danh mục</th>
-                      <th scope="col" className="px-5 py-3">Tồn kho</th>
-                      <th scope="col" className="px-5 py-3">Tối thiểu</th>
-                      <th scope="col" className="px-5 py-3 text-right">Thao tác</th>
+                      <th scope="col" className="px-5 py-3">Product name</th>
+                      <th scope="col" className="px-5 py-3">Category</th>
+                      <th scope="col" className="px-5 py-3">Stock</th>
+                      <th scope="col" className="px-5 py-3">Minimum</th>
+                      <th scope="col" className="px-5 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -231,7 +231,7 @@ export default function ProductsPage() {
                             </span>
                             {isLowStock && (
                               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                Sắp hết
+                                Low stock
                               </span>
                             )}
                           </td>
@@ -244,7 +244,7 @@ export default function ProductsPage() {
                               onClick={() => setMovementProduct(product)}
                               className="inline-flex items-center text-xs font-semibold text-emerald-600 hover:text-emerald-800 hover:underline px-1 py-0.5 rounded"
                             >
-                              Nhập/Xuất
+                              Stock in/out
                             </button>
                             {isAdmin && (
                               <button
@@ -252,7 +252,7 @@ export default function ProductsPage() {
                                 onClick={() => setDialogState({ open: true, product })}
                                 className="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline px-1 py-0.5 rounded"
                               >
-                                Sửa
+                                Edit
                               </button>
                             )}
                           </td>
@@ -263,12 +263,12 @@ export default function ProductsPage() {
                 </table>
               </div>
 
-              {/* Phân trang */}
+              {/* Pagination */}
               <div className="px-5 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-600">
                 <div>
-                  Hiển thị <span className="font-medium text-gray-900">{startIdx}</span> -{' '}
-                  <span className="font-medium text-gray-900">{endIdx}</span> trên tổng số{' '}
-                  <span className="font-medium text-gray-900">{total}</span> sản phẩm
+                  Showing <span className="font-medium text-gray-900">{startIdx}</span> -{' '}
+                  <span className="font-medium text-gray-900">{endIdx}</span> of{' '}
+                  <span className="font-medium text-gray-900">{total}</span> products
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -278,10 +278,10 @@ export default function ProductsPage() {
                     onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                     className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    Trước
+                    Previous
                   </button>
                   <span className="text-xs text-gray-500 font-medium px-2">
-                    Trang {currentPage} / {totalPages}
+                    Page {currentPage} / {totalPages}
                   </span>
                   <button
                     type="button"
@@ -289,7 +289,7 @@ export default function ProductsPage() {
                     onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                     className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    Sau
+                    Next
                   </button>
                 </div>
               </div>

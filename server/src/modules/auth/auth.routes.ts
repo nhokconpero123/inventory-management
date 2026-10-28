@@ -8,10 +8,10 @@ import { loginSchema } from './auth.schema';
 import { AppError } from '../../middleware/errors';
 import { jwtSecret } from '../../config';
 
-// So sánh với hash giả khi email không tồn tại, để thời gian phản hồi không lộ email nào có thật
+// Compare against a fake hash when the email does not exist so response time does not reveal valid email addresses.
 const DUMMY_HASH = bcrypt.hashSync('dummy', 10);
 
-// Chống dò mật khẩu: tối đa 20 lần/15 phút mỗi IP (tắt khi chạy test)
+// Prevent password guessing: at most 20 attempts per 15 minutes per IP (disabled during tests).
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
@@ -28,7 +28,7 @@ export function authRouter(db: Database.Database) {
     const { email, password } = loginSchema.parse(req.body);
     const user = users.findByEmail(email);
     const ok = bcrypt.compareSync(password, user?.password_hash ?? DUMMY_HASH);
-    // Cùng một lỗi cho: sai email, sai mật khẩu, tài khoản bị vô hiệu hóa
+    // Use the same error for an incorrect email, incorrect password, or disabled account.
     if (!user || !ok || !user.is_active) throw new AppError('INVALID_CREDENTIALS');
 
     const token = jwt.sign({ role: user.role }, jwtSecret(), {

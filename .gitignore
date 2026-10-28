@@ -4,4 +4,4 @@ dist
 data/
 *.db
 *.db-wal
-*.db-shm
+*.db-shmAGENTS.md

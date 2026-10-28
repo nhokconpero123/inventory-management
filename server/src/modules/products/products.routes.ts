@@ -9,7 +9,7 @@ export function productsRouter(db: Database.Database) {
   const router = Router();
   router.use(requireAuth);
 
-  // Route cố định phải đứng trước /:id.
+  // The fixed route must be declared before /:id.
   router.get('/low-stock', (_req, res) => res.json(repo.lowStock()));
 
   router.get('/', (req, res) => {

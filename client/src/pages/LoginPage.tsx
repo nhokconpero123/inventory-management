@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Đã đăng nhập mà vào /login thì chuyển về '/'
+  // Redirect to '/' when an authenticated user visits '/login'.
   if (session) {
     return <Navigate to="/" replace />;
   }
@@ -52,8 +52,8 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản lý kho hàng</h1>
-          <p className="text-sm text-gray-500 mt-1">Đăng nhập tài khoản của bạn</p>
+          <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Sign in to your account</p>
         </div>
 
         {error && (
@@ -97,7 +97,7 @@ export default function LoginPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu
+              Password
             </label>
             <input
               id="password"
@@ -127,10 +127,10 @@ export default function LoginPage() {
                     d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                   />
                 </svg>
-                Đang đăng nhập...
+                Signing in...
               </span>
             ) : (
-              'Đăng nhập'
+              'Sign in'
             )}
           </button>
         </form>
@@ -138,4 +138,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

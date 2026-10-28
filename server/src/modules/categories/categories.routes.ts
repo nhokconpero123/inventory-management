@@ -8,7 +8,7 @@ export function categoriesRouter(db: Database.Database) {
   const repo = createCategoriesRepo(db);
   const router = Router();
 
-  router.use(requireAuth); // staff+ đọc được
+  router.use(requireAuth); // Staff and admins can read.
 
   router.get('/', (_req, res) => {
     res.json(repo.list());
