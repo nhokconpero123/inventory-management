@@ -3,7 +3,7 @@ import { AppError } from '../../middleware/errors';
 
 export type MovementType = 'IN' | 'OUT' | 'ADJUST';
 
-/** Movement trả ra API. Cố ý KHÔNG có idempotency_key. */
+/** Movement returned by the API. The idempotency_key is intentionally omitted. */
 export interface Movement {
   id: number;
   product_id: number;
@@ -29,7 +29,7 @@ const COLS = 'id, product_id, type, quantity_change, quantity_after, reason, cre
 export function createMovementsRepo(db: Database.Database) {
   const findByKey = db.prepare(`SELECT ${COLS} FROM stock_movements WHERE idempotency_key = ?`);
 
-  // UPDATE có điều kiện: chỉ thành công nếu tồn kho sau khi đổi vẫn >= 0
+  // Conditional UPDATE: succeeds only when stock remains >= 0 after the change.
   const updateStock = db.prepare(
     `UPDATE products SET quantity = quantity + @delta, updated_at = datetime('now')
      WHERE id = @id AND is_active = 1 AND quantity + @delta >= 0
@@ -44,11 +44,11 @@ export function createMovementsRepo(db: Database.Database) {
      RETURNING ${COLS}`,
   );
 
-  // Toàn bộ chạy trong MỘT transaction: cập nhật tồn kho và ghi sổ cái cùng thành công hoặc cùng hủy
+  // Run everything in ONE transaction: update stock and write the ledger together, or roll back both.
   const tx = db.transaction((p: RecordInput) => {
     const dup = findByKey.get(p.key) as Movement | undefined;
     if (dup) {
-      // Cùng key nhưng khác sản phẩm là client dùng sai key, không được trả nhầm movement
+      // The same key used for a different product is a client error; never return the wrong movement.
       if (dup.product_id !== p.productId) throw new AppError('CONFLICT');
       return { movement: dup, replayed: true };
     }
@@ -75,7 +75,7 @@ export function createMovementsRepo(db: Database.Database) {
   });
 
   return {
-    /** Hàm DUY NHẤT được phép đổi products.quantity. BEGIN IMMEDIATE để các lần ghi xếp hàng tuần tự. */
+    /** The ONLY function allowed to change products.quantity. BEGIN IMMEDIATE serializes writes. */
     record: (p: RecordInput) => tx.immediate(p),
 
     productExists: (id: number) => Boolean(productExists.get(id)),

@@ -39,7 +39,7 @@ export default function ProductFormDialog({
     const parsedMinQty = Math.max(0, parseInt(minQuantity, 10) || 0);
 
     if (!trimmedSku || !trimmedName) {
-      setError('Vui lòng điền đầy đủ SKU và tên sản phẩm.');
+      setError('Please enter both an SKU and a product name.');
       return;
     }
 
@@ -48,7 +48,7 @@ export default function ProductFormDialog({
 
     try {
       if (isEdit && product) {
-        // Sửa gọi PATCH /products/:id (KHÔNG gửi quantity)
+        // Edit with PATCH /products/:id (do not send quantity).
         await api<Product>(`/products/${product.id}`, {
           method: 'PATCH',
           body: {
@@ -59,7 +59,7 @@ export default function ProductFormDialog({
           },
         });
       } else {
-        // Thêm mới gọi POST /products (KHÔNG gửi quantity)
+        // Create with POST /products (do not send quantity).
         const body: {
           sku: string;
           name: string;
@@ -98,14 +98,14 @@ export default function ProductFormDialog({
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden my-8">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">
-            {isEdit ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
+            {isEdit ? 'Edit product' : 'Add product'}
           </h2>
           <button
             type="button"
             disabled={submitting}
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
-            aria-label="Đóng"
+            aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -132,7 +132,7 @@ export default function ProductFormDialog({
 
           <div>
             <label htmlFor="product-sku" className="block text-sm font-medium text-gray-700 mb-1">
-              Mã SKU <span className="text-red-500">*</span>
+              SKU <span className="text-red-500">*</span>
             </label>
             <input
               id="product-sku"
@@ -140,14 +140,14 @@ export default function ProductFormDialog({
               required
               value={sku}
               onChange={(e) => setSku(e.target.value)}
-              placeholder="VD: IP15-128"
+              placeholder="e.g. IP15-128"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
             <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
-              Tên sản phẩm <span className="text-red-500">*</span>
+              Product name <span className="text-red-500">*</span>
             </label>
             <input
               id="product-name"
@@ -155,14 +155,14 @@ export default function ProductFormDialog({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="VD: iPhone 15 128GB"
+              placeholder="e.g. iPhone 15 128GB"
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
 
           <div>
             <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">
-              Danh mục
+              Category
             </label>
             <select
               id="product-category"
@@ -170,7 +170,7 @@ export default function ProductFormDialog({
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="">-- Không có danh mục --</option>
+              <option value="">-- No category --</option>
               {categories?.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -181,7 +181,7 @@ export default function ProductFormDialog({
 
           <div>
             <label htmlFor="product-min-quantity" className="block text-sm font-medium text-gray-700 mb-1">
-              Tồn tối thiểu
+              Min. stock
             </label>
             <input
               id="product-min-quantity"
@@ -192,7 +192,7 @@ export default function ProductFormDialog({
               onChange={(e) => setMinQuantity(e.target.value)}
               className="w-full px-3.5 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-            <p className="text-xs text-gray-400 mt-1">Cảnh báo sắp hết khi tồn kho ≤ mức này</p>
+            <p className="text-xs text-gray-400 mt-1">Low stock warning when stock is ≤ this value</p>
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-3">
@@ -202,7 +202,7 @@ export default function ProductFormDialog({
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
@@ -215,7 +215,7 @@ export default function ProductFormDialog({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                 </svg>
               )}
-              {isEdit ? 'Lưu thay đổi' : 'Thêm sản phẩm'}
+              {isEdit ? 'Save changes' : 'Add product'}
             </button>
           </div>
         </form>
@@ -223,4 +223,3 @@ export default function ProductFormDialog({
     </div>
   );
 }
-

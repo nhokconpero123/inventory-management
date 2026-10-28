@@ -9,7 +9,7 @@ export function usersRouter(db: Database.Database) {
   const repo = createUsersRepo(db);
   const router = Router();
 
-  router.use(requireAuth, requireRole('admin')); // toàn bộ /users chỉ admin
+  router.use(requireAuth, requireRole('admin')); // Only admins can access /users.
 
   router.post('/', (req, res) => {
     const { password, ...rest } = createUserSchema.parse(req.body);

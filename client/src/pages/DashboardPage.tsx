@@ -186,7 +186,7 @@ export default function DashboardPage() {
 
         {lowStockProducts.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-500">
-            Không có products nào sắp hết hàng.
+            No products are low on stock
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -194,7 +194,7 @@ export default function DashboardPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-semibold border-b border-gray-200">
                 <tr>
                   <th scope="col" className="px-5 py-3">SKU</th>
-                  <th scope="col" className="px-5 py-3">Tên products</th>
+                  <th scope="col" className="px-5 py-3">Product name</th>
                   <th scope="col" className="px-5 py-3">Stock / Min. stock</th>
                   <th scope="col" className="px-5 py-3">Status</th>
                 </tr>

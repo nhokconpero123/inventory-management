@@ -30,22 +30,22 @@ const ledgerRows = () =>
   (ctx.db.prepare('SELECT COUNT(*) AS n FROM stock_movements').get() as { n: number }).n;
 
 describe('POST /products/:id/movements', () => {
-  it('IN → 201, quantity_change dương, quantity_after đúng', async () => {
-    const res = await move({ type: 'IN', quantity: 4, reason: 'Nhập hàng' }, 'k1');
+  it('IN → 201, quantity_change is positive and quantity_after is correct', async () => {
+    const res = await move({ type: 'IN', quantity: 4, reason: 'Stock received' }, 'k1');
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ product_id: pid, type: 'IN', quantity_change: 4, quantity_after: 9 });
     expect(res.body).not.toHaveProperty('idempotency_key');
     expect(stock()).toBe(9);
   });
 
-  it('OUT → 201, quantity_change âm', async () => {
+  it('OUT → 201, quantity_change is negative', async () => {
     const res = await move({ type: 'OUT', quantity: 2 }, 'k1');
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ type: 'OUT', quantity_change: -2, quantity_after: 3 });
     expect(stock()).toBe(3);
   });
 
-  it('xuất vượt tồn → 409 INSUFFICIENT_STOCK, tồn kho và sổ cái không đổi', async () => {
+  it('stock out exceeds available stock → 409 INSUFFICIENT_STOCK with stock and ledger unchanged', async () => {
     const res = await move({ type: 'OUT', quantity: 6 }, 'k1');
     expect(res.status).toBe(409);
     expect(res.body).toEqual({ error: 'INSUFFICIENT_STOCK' });
@@ -53,13 +53,13 @@ describe('POST /products/:id/movements', () => {
     expect(ledgerRows()).toBe(0);
   });
 
-  it('thiếu header Idempotency-Key → 400', async () => {
+  it('missing Idempotency-Key header → 400', async () => {
     const res = await move({ type: 'IN', quantity: 1 });
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ error: 'VALIDATION' });
   });
 
-  it('gửi trùng key → 200, trả movement cũ, chỉ trừ một lần', async () => {
+  it('duplicate key → 200, returns the existing movement and applies the change once', async () => {
     const first = await move({ type: 'OUT', quantity: 2 }, 'dup');
     const again = await move({ type: 'OUT', quantity: 2 }, 'dup');
     expect(first.status).toBe(201);
@@ -69,7 +69,7 @@ describe('POST /products/:id/movements', () => {
     expect(ledgerRows()).toBe(1);
   });
 
-  it('dùng lại key cho sản phẩm khác → 409 CONFLICT', async () => {
+  it('reusing a key for a different product → 409 CONFLICT', async () => {
     const other = addProduct(ctx.db, { sku: 'B2', quantity: 5 });
     await move({ type: 'IN', quantity: 1 }, 'same');
     const res = await move({ type: 'IN', quantity: 1 }, 'same', staff, other);
@@ -77,30 +77,30 @@ describe('POST /products/:id/movements', () => {
     expect(res.body).toEqual({ error: 'CONFLICT' });
   });
 
-  it('sản phẩm không tồn tại → 404', async () => {
+  it('product does not exist → 404', async () => {
     const res = await move({ type: 'IN', quantity: 1 }, 'k1', staff, 999);
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'NOT_FOUND' });
   });
 
-  it('sản phẩm đã ẩn → 404', async () => {
+  it('product is inactive → 404', async () => {
     const hidden = addProduct(ctx.db, { sku: 'H1', quantity: 5, isActive: 0 });
     const res = await move({ type: 'IN', quantity: 1 }, 'k1', staff, hidden);
     expect(res.status).toBe(404);
   });
 
-  it('không token → 401', async () => {
+  it('missing token → 401', async () => {
     const res = await move({ type: 'IN', quantity: 1 }, 'k1', null);
     expect(res.status).toBe(401);
   });
 
-  it('created_by lấy từ token, bỏ qua giá trị trong body', async () => {
+  it('created_by comes from the token and ignores the body value', async () => {
     const res = await move({ type: 'IN', quantity: 1, created_by: 999 }, 'k1');
     expect(res.status).toBe(201);
     expect(res.body.created_by).toBe(staffId);
   });
 
-  it('quantity không hợp lệ (0, âm, thập phân, chuỗi) với IN → 400', async () => {
+  it('invalid IN quantity (zero, negative, decimal, or string) → 400', async () => {
     for (const [i, q] of [0, -1, 1.5, '3'].entries()) {
       const res = await move({ type: 'IN', quantity: q }, `bad${i}`);
       expect(res.status).toBe(400);
@@ -108,30 +108,30 @@ describe('POST /products/:id/movements', () => {
     expect(ledgerRows()).toBe(0);
   });
 
-  it('type lạ → 400', async () => {
+  it('unknown type → 400', async () => {
     const res = await move({ type: 'DELETE', quantity: 1 }, 'k1');
     expect(res.status).toBe(400);
   });
 
-  it('staff gửi ADJUST → 403', async () => {
-    const res = await move({ type: 'ADJUST', quantity: 1, reason: 'Kiểm kê' }, 'k1');
+  it('staff submits ADJUST → 403', async () => {
+    const res = await move({ type: 'ADJUST', quantity: 1, reason: 'Inventory count' }, 'k1');
     expect(res.status).toBe(403);
     expect(res.body).toEqual({ error: 'FORBIDDEN' });
   });
 
-  it('admin ADJUST dương → 201', async () => {
-    const res = await move({ type: 'ADJUST', quantity: 3, reason: 'Kiểm kê thừa' }, 'k1', admin);
+  it('admin ADJUST increase → 201', async () => {
+    const res = await move({ type: 'ADJUST', quantity: 3, reason: 'Inventory surplus' }, 'k1', admin);
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ type: 'ADJUST', quantity_change: 3, quantity_after: 8 });
   });
 
-  it('admin ADJUST âm làm tồn kho < 0 → 409', async () => {
-    const res = await move({ type: 'ADJUST', quantity: -6, reason: 'Kiểm kê thiếu' }, 'k1', admin);
+  it('admin ADJUST decrease that would make stock < 0 → 409', async () => {
+    const res = await move({ type: 'ADJUST', quantity: -6, reason: 'Inventory shortage' }, 'k1', admin);
     expect(res.status).toBe(409);
     expect(stock()).toBe(5);
   });
 
-  it('ADJUST thiếu reason → 400', async () => {
+  it('ADJUST missing reason → 400', async () => {
     const res = await move({ type: 'ADJUST', quantity: 1 }, 'k1', admin);
     expect(res.status).toBe(400);
   });
@@ -141,7 +141,7 @@ describe('POST /products/:id/movements', () => {
     expect(res.status).toBe(400);
   });
 
-  it('10 request đồng thời xuất 1: chỉ 5 thành công, tồn kho về 0', async () => {
+  it('10 concurrent requests to stock out 1: only 5 succeed and stock reaches 0', async () => {
     const rs = await Promise.all(
       Array.from({ length: 10 }, (_, i) => move({ type: 'OUT', quantity: 1 }, `c${i}`)),
     );
@@ -150,13 +150,13 @@ describe('POST /products/:id/movements', () => {
     expect(stock()).toBe(0);
   });
 
-  it('đối soát: SUM(quantity_change) bằng products.quantity', async () => {
-    const p2 = addProduct(ctx.db, { sku: 'B2', quantity: 0 }); // bắt đầu từ 0 để sổ cái khớp tuyệt đối
+  it('reconciliation: SUM(quantity_change) equals products.quantity', async () => {
+    const p2 = addProduct(ctx.db, { sku: 'B2', quantity: 0 }); 
     await move({ type: 'IN', quantity: 10 }, 'r1', staff, p2);
     await move({ type: 'OUT', quantity: 3 }, 'r2', staff, p2);
-    await move({ type: 'ADJUST', quantity: -2, reason: 'Kiểm kê lệch' }, 'r3', admin, p2);
-    await move({ type: 'ADJUST', quantity: 1, reason: 'Kiểm kê lệch' }, 'r4', admin, p2);
-    await move({ type: 'OUT', quantity: 99 }, 'r5', staff, p2); // bị từ chối, không ghi sổ
+    await move({ type: 'ADJUST', quantity: -2, reason: 'Inventory discrepancy' }, 'r3', admin, p2);
+    await move({ type: 'ADJUST', quantity: 1, reason: 'Inventory discrepancy' }, 'r4', admin, p2);
+    await move({ type: 'OUT', quantity: 99 }, 'r5', staff, p2); 
     const sum = ctx.db
       .prepare('SELECT SUM(quantity_change) AS s FROM stock_movements WHERE product_id = ?')
       .get(p2) as { s: number };
@@ -166,7 +166,7 @@ describe('POST /products/:id/movements', () => {
 });
 
 describe('GET movements', () => {
-  it('/products/:id/movements: mới nhất trước, có phân trang', async () => {
+  it('/products/:id/movements: newest first with pagination', async () => {
     await move({ type: 'IN', quantity: 1 }, 'g1');
     await move({ type: 'IN', quantity: 2 }, 'g2');
     await move({ type: 'IN', quantity: 3 }, 'g3');
@@ -182,12 +182,12 @@ describe('GET movements', () => {
     expect(p2.body.items).toHaveLength(1);
   });
 
-  it('/products/:id/movements: sản phẩm không có → 404', async () => {
+  it('/products/:id/movements: missing product → 404', async () => {
     const res = await request(ctx.app).get('/products/999/movements').set('Authorization', staff);
     expect(res.status).toBe(404);
   });
 
-  it('/movements: lọc theo type', async () => {
+  it('/movements: filter by type', async () => {
     await move({ type: 'IN', quantity: 1 }, 'g1');
     await move({ type: 'OUT', quantity: 1 }, 'g2');
     await move({ type: 'IN', quantity: 2 }, 'g3');
@@ -197,7 +197,7 @@ describe('GET movements', () => {
     expect(res.body.items[0].type).toBe('OUT');
   });
 
-  it('/movements: lọc theo khoảng ngày (bao gồm hai đầu)', async () => {
+  it('/movements: filter by date range (inclusive)', async () => {
     await move({ type: 'IN', quantity: 1 }, 'g1');
     await move({ type: 'IN', quantity: 1 }, 'g2');
     const old = await request(ctx.app).get('/movements?from=2000-01-01&to=2000-01-02').set('Authorization', staff);
@@ -206,14 +206,14 @@ describe('GET movements', () => {
     expect(all.body.total).toBe(2);
   });
 
-  it('/movements: tham số sai → 400', async () => {
-    for (const q of ['from=hom-nay', 'from=2026-02-31', 'type=XYZ', 'from=2026-12-01&to=2026-01-01', 'page=0']) {
+  it('/movements: invalid parameters → 400', async () => {
+    for (const q of ['from=today', 'from=2026-02-31', 'type=XYZ', 'from=2026-12-01&to=2026-01-01', 'page=0']) {
       const res = await request(ctx.app).get(`/movements?${q}`).set('Authorization', staff);
       expect(res.status).toBe(400);
     }
   });
 
-  it('/movements: không token → 401', async () => {
+  it('/movements: missing token → 401', async () => {
     const res = await request(ctx.app).get('/movements');
     expect(res.status).toBe(401);
   });

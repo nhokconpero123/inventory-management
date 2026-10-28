@@ -13,7 +13,7 @@ export interface UserRow {
   created_at: string;
 }
 
-/** Bản an toàn để trả ra API: KHÔNG có password_hash. */
+/** Safe version returned by the API; it does NOT include password_hash. */
 export type PublicUser = Omit<UserRow, 'password_hash'>;
 
 export function createUsersRepo(db: Database.Database) {
@@ -31,7 +31,7 @@ export function createUsersRepo(db: Database.Database) {
       try {
         return insert.get(u) as PublicUser;
       } catch (e: any) {
-        if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new AppError('CONFLICT'); // trùng email
+        if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new AppError('CONFLICT'); // Duplicate email.
         throw e;
       }
     },

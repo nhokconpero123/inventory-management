@@ -4,18 +4,18 @@ import { seedDemo } from './db/seedData';
 import { createApp } from './app';
 import { jwtSecret } from './config';
 
-jwtSecret(); // báo lỗi ngay lúc khởi động nếu thiếu JWT_SECRET
+jwtSecret(); // Fail immediately at startup if JWT_SECRET is missing.
 
 const db = openDb();
 const hasTables = db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'users'").get();
 if (!hasTables) applySchema(db);
 
-// Demo: ổ đĩa của host miễn phí bị xóa khi khởi động lại → tự tạo dữ liệu mẫu nếu DB trống
+// Demo: free-host disks are cleared on restart, so create sample data when the database is empty.
 if (process.env.AUTO_SEED === '1') {
   const { n } = db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number };
   if (n === 0) {
     seedDemo(db);
-    console.log('Đã tạo dữ liệu demo (AUTO_SEED=1)');
+    console.log('Demo data created (AUTO_SEED=1)');
   }
 }
 

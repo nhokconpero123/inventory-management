@@ -12,19 +12,19 @@ import { requireAuth } from '../auth/auth.middleware';
 import { AppError } from '../../middleware/errors';
 
 /**
- * Router này mount ở gốc (app.use(movementsRouter(db))) vì chứa cả /products/:id/movements và /movements.
- * Vì vậy requireAuth gắn trên TỪNG route, không dùng router.use (sẽ chặn nhầm các route khác).
+ * This router is mounted at the root (app.use(movementsRouter(db))) because it contains both /products/:id/movements and /movements.
+ * Attach requireAuth to EACH route instead of using router.use, which would block unrelated routes.
  */
 export function movementsRouter(db: Database.Database) {
   const repo = createMovementsRepo(db);
   const router = Router();
 
   router.post('/products/:id/movements', requireAuth, (req, res) => {
-    // Kiểm tra quyền trước khi validate để staff gửi ADJUST luôn nhận 403
+    // Check permissions before validation so staff always receive 403 when submitting ADJUST.
     if (req.body?.type === 'ADJUST' && req.user!.role !== 'admin') throw new AppError('FORBIDDEN');
 
     const { id } = idParamSchema.parse(req.params);
-    const key = idempotencyKeySchema.parse(req.header('Idempotency-Key')); // thiếu header → 400
+    const key = idempotencyKeySchema.parse(req.header('Idempotency-Key')); // Missing header returns 400.
     const body = createMovementSchema.parse(req.body);
 
     const { movement, replayed } = repo.record({
@@ -33,7 +33,7 @@ export function movementsRouter(db: Database.Database) {
       quantity: body.quantity,
       reason: body.reason,
       key,
-      userId: req.user!.id, // luôn lấy từ JWT, KHÔNG lấy từ body
+      userId: req.user!.id, // Always use the JWT; never read this from the body.
     });
     res.status(replayed ? 200 : 201).json(movement);
   });

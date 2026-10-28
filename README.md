@@ -3,44 +3,44 @@ Inventory management app: React, Express, SQLite, JWT roles
 
 # Inventory Management
 
-Ứng dụng quản lý sản phẩm, tồn kho và cảnh báo hàng sắp hết.
+Manage products, stock, and low-stock alerts.
 
 **Stack:** React + Vite + Tailwind, Node.js + Express, SQLite, JWT (admin/staff), Vitest + Supertest.
 
-> Đang phát triển.
+> In development.
 # Inventory Management System (IMS)
 
 ![CI](https://github.com/nhokconpero123/inventory-management/actions/workflows/ci.yml/badge.svg)
 
-Ứng dụng quản lý kho: theo dõi tồn kho theo sổ cái biến động, cảnh báo sắp hết hàng, phân quyền admin/staff.
+Inventory management system: track stock through a movement ledger, monitor low-stock alerts, and manage admin/staff access.
 
 **Demo:** <https://inventory-management.nhokconpero123.workers.dev/>
-**Tài khoản:** `admin@demo.com` hoặc `staff@demo.com`, mật khẩu `Demo@12345`
+**Accounts:** `admin@demo.com` or `staff@demo.com`, password `Demo@12345`
 
 
 ![Dashboard](docs/screenshots/dashboard.png)
-![Sản phẩm](docs/screenshots/products.png)
+![Products](docs/screenshots/products.png)
 
-## Tính năng
-- Đăng nhập JWT, 2 vai trò: admin và staff
-- Quản lý sản phẩm, danh mục, tìm kiếm theo tên/SKU, lọc, phân trang
-- Nhập (IN), xuất (OUT), điều chỉnh sau kiểm kê (ADJUST) với lý do bắt buộc
-- Cảnh báo sắp hết hàng khi `quantity <= min_quantity`
-- Dashboard tổng quan và lịch sử biến động có bộ lọc theo loại, ngày
+## Features
+- JWT sign-in with two roles: admin and staff
+- Manage products and categories; search by name or SKU, filter results, and browse pages
+- Stock in (IN), stock out (OUT), and post-count adjustments (ADJUST) with a required reason
+- Low-stock alerts when `quantity <= min_quantity`
+- Dashboard overview and movement history with type and date filters
 
-## Phân quyền
-| Thao tác | admin | staff |
+## Permissions
+| Action | admin | staff |
 |---|:---:|:---:|
-| Xem sản phẩm, danh mục, lịch sử, dashboard | ✅ | ✅ |
-| Nhập, xuất kho | ✅ | ✅ |
-| Điều chỉnh tồn kho (ADJUST) | ✅ | ❌ |
-| Thêm/sửa sản phẩm, thêm danh mục | ✅ | ❌ |
-| Tạo tài khoản | ✅ | ❌ |
+| View products, categories, history, and dashboard | ✅ | ✅ |
+| Stock in and stock out | ✅ | ✅ |
+| Adjust stock (ADJUST) | ✅ | ❌ |
+| Add/edit products and add categories | ✅ | ❌ |
+| Create accounts | ✅ | ❌ |
 
-## Công nghệ
+## Technology
 React, Vite, TypeScript, Tailwind, TanStack Query · Node.js, Express, SQLite (better-sqlite3), zod · JWT, bcrypt · Vitest, Supertest · GitHub Actions
 
-## Cơ sở dữ liệu
+## Database
 ```mermaid
 erDiagram
   users ||--o{ stock_movements : "created_by"
@@ -76,17 +76,17 @@ erDiagram
   }
 ```
 
-## Quyết định thiết kế
-- **Sổ cái bất biến:** `stock_movements` chỉ thêm, không sửa/xóa (trigger chặn ở DB). Sai thì tạo movement bù.
-- **Một cửa duy nhất đổi tồn kho:** chỉ hàm `recordMovement()` được đổi `products.quantity`, trong một transaction cùng với ghi sổ cái.
-- **Chống tồn kho âm 2 lớp:** `UPDATE ... WHERE quantity + delta >= 0` trong code và `CHECK (quantity >= 0)` ở DB.
-- **Idempotency-Key:** gửi lại cùng một request (mất mạng, bấm đúp) không làm trừ kho hai lần.
-- **Đồng thời:** SQLite chỉ có một writer; transaction `IMMEDIATE` và WAL giúp các lần ghi xếp hàng tuần tự.
-- **Vì sao SQLite:** đủ cho một kho, không cần dựng máy chủ riêng. Truy vấn gói trong lớp repository nên chuyển PostgreSQL chỉ sửa ở lớp đó.
-- **Test:** API được test bằng Supertest trên SQLite `:memory:` qua `createApp(db)`, kèm bài kiểm tra đối soát `SUM(quantity_change) = quantity`.
+## Design decisions
+- **Immutable ledger:** `stock_movements` is append-only; updates and deletes are blocked by a database trigger. Correct mistakes by creating a compensating movement.
+- **Single stock update path:** only `recordMovement()` may change `products.quantity`, within one transaction that also writes to the ledger.
+- **Two safeguards against negative stock:** `UPDATE ... WHERE quantity + delta >= 0` in code and `CHECK (quantity >= 0)` in the database.
+- **Idempotency-Key:** retrying the same request (after a network failure or double-click) does not deduct stock twice.
+- **Concurrency:** SQLite allows only one writer; `IMMEDIATE` transactions and WAL serialize writes.
+- **Why SQLite:** it is sufficient for one warehouse and needs no separate server. Queries are contained in the repository layer, so moving to PostgreSQL requires changes only there.
+- **Tests:** Supertest tests the API on SQLite `:memory:` through `createApp(db)`, including a reconciliation check for `SUM(quantity_change) = quantity`.
 
-## Chạy trên máy (Windows PowerShell)
-Cần Node.js 20 trở lên.
+## Run locally (Windows PowerShell)
+Node.js 20 or later is required.
 ```powershell
 git clone https://github.com/<tai-khoan>/inventory-management.git
 cd inventory-management
@@ -97,18 +97,18 @@ npm run seed
 npm run dev          # API: http://localhost:3000
 npm run dev:client   # Web: http://localhost:5173
 ```
-Chạy test: `npm test`
+Run tests: `npm test`
 
-## Tài liệu
+## Documentation
 - [API](docs/api-spec.md)
-- [Quy tắc nghiệp vụ kho](docs/inventory-rules.md)
+- [Inventory rules](docs/inventory-rules.md)
 
-## Giới hạn đã biết
-- Token lưu `sessionStorage` (dễ bị XSS đọc hơn cookie httpOnly) và còn hiệu lực tối đa 1 giờ sau khi tài khoản bị vô hiệu hóa.
-- Chưa có chức năng đổi mật khẩu hay vô hiệu hóa người dùng qua giao diện.
-- SQLite chỉ phù hợp một kho, một máy chủ. Nhiều kho hoặc nhiều máy chủ cần PostgreSQL.
-- Tên danh mục phân biệt hoa thường.
-- Chưa có lô/hạn sử dụng, hàng giữ chỗ, hàng đang về.
+## Known limitations
+- Tokens are stored in `sessionStorage` (more exposed to XSS than httpOnly cookies) and remain valid for up to one hour after an account is disabled.
+- The UI does not yet support changing passwords or disabling users.
+- SQLite is suited to one warehouse and one server. Multiple warehouses or servers require PostgreSQL.
+- Category names are case-sensitive.
+- Batches/expiry dates, reserved stock, and incoming stock are not supported yet.
 
-## Hướng phát triển
-Theo dõi lô và hạn sử dụng, đặt trước hàng (reserved), nhiều kho, chuyển sang PostgreSQL, cookie httpOnly cho token.
+## Roadmap
+Add batch and expiry tracking, reserved stock, multiple warehouses, PostgreSQL support, and httpOnly cookies for tokens.

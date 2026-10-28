@@ -18,7 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState(null);
   }, []);
 
-  // api() phát sự kiện này khi server trả 401 (token hết hạn)
+  // api() fires this event when the server returns 401 (token expired)
   useEffect(() => {
     const onExpired = () => setState(null);
     window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);

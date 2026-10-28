@@ -1,12 +1,12 @@
 # API Specification
 
-## Danh sách Endpoint
+## Endpoint List
 
 ---
 
 ### 1. POST /auth/login
 * **Method**: `POST`
-* **Quyền**: Public
+* **Access**: Public
 * **Request Body**:
   ```json
   {
@@ -14,19 +14,19 @@
     "password": "password123"
   }
   ```
-* **Response thành công (200 OK)**:
+* **Successful Response (200 OK)**:
   ```json
   {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`
+* **Possible Error Codes**: `400`, `401`
 
 ---
 
 ### 2. POST /users
 * **Method**: `POST`
-* **Quyền**: Admin (Tạo tài khoản staff)
+* **Access**: Admin (create staff accounts)
 * **Request Body**:
   ```json
   {
@@ -35,7 +35,7 @@
     "role": "staff"
   }
   ```
-* **Response thành công (201 Created)**:
+* **Successful Response (201 Created)**:
   ```json
   {
     "id": 2,
@@ -44,15 +44,15 @@
     "created_at": "2026-10-27T10:00:00Z"
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`, `409`
+* **Possible Error Codes**: `400`, `401`, `403`, `409`
 
 ---
 
 ### 3. GET /dashboard/summary
 * **Method**: `GET`
-* **Quyền**: Staff+ (Admin, Staff)
-* **Query Parameters**: Không
-* **Response thành công (200 OK)**:
+* **Access**: Staff+ (Admin, Staff)
+* **Query Parameters**: None
+* **Successful Response (200 OK)**:
   ```json
   {
     "total_products": 150,
@@ -68,57 +68,57 @@
     ]
   }
   ```
-* **Mã lỗi có thể trả**: `401`, `403`
+* **Possible Error Codes**: `401`, `403`
 
 ---
 
 ### 4. GET /categories
 * **Method**: `GET`
-* **Quyền**: Staff+
-* **Query Parameters**: Không
-* **Response thành công (200 OK)**:
+* **Access**: Staff+
+* **Query Parameters**: None
+* **Successful Response (200 OK)**:
   ```json
   [
     {
       "id": 1,
-      "name": "Điện thoại"
+      "name": "Phones"
     }
   ]
   ```
-* **Mã lỗi có thể trả**: `401`, `403`
+* **Possible Error Codes**: `401`, `403`
 
 ---
 
 ### 5. POST /categories
 * **Method**: `POST`
-* **Quyền**: Admin
+* **Access**: Admin
 * **Request Body**:
   ```json
   {
     "name": "Laptop"
   }
   ```
-* **Response thành công (201 Created)**:
+* **Successful Response (201 Created)**:
   ```json
   {
     "id": 2,
     "name": "Laptop"
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`, `409`
+* **Possible Error Codes**: `400`, `401`, `403`, `409`
 
 ---
 
 ### 6. GET /products
 * **Method**: `GET`
-* **Quyền**: Staff+
+* **Access**: Staff+
 * **Query Parameters**:
-  * `q` (string): Tìm kiếm theo tên
-  * `category_id` (number): Lọc theo danh mục
-  * `low_stock` (number): `1` để lọc sản phẩm sắp hết
-  * `page` (number): Trang hiện tại
-  * `limit` (number): Số lượng sản phẩm/trang
-* **Response thành công (200 OK)**:
+  * `q` (string): Search by name
+  * `category_id` (number): Filter by category
+  * `low_stock` (number): Set to `1` to filter low-stock products
+  * `page` (number): Current page
+  * `limit` (number): Number of products per page
+* **Successful Response (200 OK)**:
   ```json
   {
     "items": [
@@ -134,13 +134,13 @@
     "page": 1
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`
+* **Possible Error Codes**: `400`, `401`, `403`
 
 ---
 
 ### 7. POST /products
 * **Method**: `POST`
-* **Quyền**: Admin
+* **Access**: Admin
 * **Request Body**:
   ```json
   {
@@ -150,7 +150,7 @@
     "min_quantity": 3
   }
   ```
-* **Response thành công (201 Created)**:
+* **Successful Response (201 Created)**:
   ```json
   {
     "id": 5,
@@ -160,14 +160,14 @@
     "min_quantity": 3
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`
+* **Possible Error Codes**: `400`, `401`, `403`
 
 ---
 
 ### 8. PATCH /products/:id
 * **Method**: `PATCH`
-* **Quyền**: Admin
-* **Lưu ý**: Không hỗ trợ cập nhật trường `quantity`.
+* **Access**: Admin
+* **Note**: Updating the `quantity` field is not supported.
 * **Request Body**:
   ```json
   {
@@ -175,7 +175,7 @@
     "min_quantity": 5
   }
   ```
-* **Response thành công (200 OK)**:
+* **Successful Response (200 OK)**:
   ```json
   {
     "id": 5,
@@ -185,69 +185,69 @@
     "min_quantity": 5
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`, `404`
+* **Possible Error Codes**: `400`, `401`, `403`, `404`
 
 ---
 
 ### 9. GET /products/low-stock
 * **Method**: `GET`
-* **Quyền**: Staff+
-* **Query Parameters**: Không
-* **Response thành công (200 OK)**:
+* **Access**: Staff+
+* **Query Parameters**: None
+* **Successful Response (200 OK)**:
   ```json
   [
     {
       "id": 2,
-      "name": "Chuột không dây",
+      "name": "Wireless mouse",
       "quantity": 2,
       "min_quantity": 5
     }
   ]
   ```
-* **Mã lỗi có thể trả**: `401`, `403`
+* **Possible Error Codes**: `401`, `403`
 
 ---
 
 ### 10. POST /products/:id/movements
 * **Method**: `POST`
-* **Quyền**: Staff+ (Riêng type `ADJUST` chỉ dành cho Admin)
+* **Access**: Staff+ (the `ADJUST` type is reserved for Admin)
 * **Headers**:
-  * `Idempotency-Key` (string, bắt buộc)
+  * `Idempotency-Key` (string, required)
 * **Request Body**:
   ```json
   {
     "type": "IN",
     "quantity": 5,
-    "reason": "Nhập hàng bổ sung"
+    "reason": "Additional stock received"
   }
   ```
-* **Response thành công**:
-  * **201 Created**: Tạo giao dịch biến động kho mới.
-  * **200 OK**: Trùng `Idempotency-Key` (trả về dữ liệu giao dịch cũ).
+* **Successful Response**:
+  * **201 Created**: Creates a new stock movement.
+  * **200 OK**: Duplicate `Idempotency-Key` (returns the existing movement).
   ```json
   {
     "id": 101,
     "product_id": 1,
     "type": "IN",
     "quantity": 5,
-    "reason": "Nhập hàng bổ sung",
+    "reason": "Additional stock received",
     "created_at": "2026-10-27T13:00:00Z"
   }
   ```
-* **Mã lỗi có thể trả**:
-  * `400 Bad Request`: Sai dữ liệu đầu vào hoặc thiếu Header `Idempotency-Key`.
-  * `401 Unauthorized`: Chưa xác thực.
-  * `403 Forbidden`: Quyền `staff` cố gắng thực hiện type `ADJUST`.
-  * `404 Not Found`: Không có sản phẩm với `:id` tương ứng.
-  * `409 Conflict`: Thiếu tồn kho (khi thực hiện `OUT` hoặc `ADJUST` giảm quá số lượng có sẵn).
+* **Possible Error Codes**:
+  * `400 Bad Request`: Invalid input or missing `Idempotency-Key` header.
+  * `401 Unauthorized`: Authentication is required.
+  * `403 Forbidden`: A `staff` user attempted to submit type `ADJUST`.
+  * `404 Not Found`: No product exists for the specified `:id`.
+  * `409 Conflict`: Insufficient stock (when `OUT` or `ADJUST` would reduce stock below the available quantity).
 
 ---
 
 ### 11. GET /products/:id/movements
 * **Method**: `GET`
-* **Quyền**: Staff+
-* **Query Parameters**: Không
-* **Response thành công (200 OK)**:
+* **Access**: Staff+
+* **Query Parameters**: None
+* **Successful Response (200 OK)**:
   ```json
   [
     {
@@ -255,24 +255,24 @@
       "product_id": 1,
       "type": "IN",
       "quantity": 5,
-      "reason": "Nhập hàng bổ sung",
+      "reason": "Additional stock received",
       "created_at": "2026-10-27T13:00:00Z"
     }
   ]
   ```
-* **Mã lỗi có thể trả**: `401`, `403`, `404`
+* **Possible Error Codes**: `401`, `403`, `404`
 
 ---
 
 ### 12. GET /movements
 * **Method**: `GET`
-* **Quyền**: Staff+
+* **Access**: Staff+
 * **Query Parameters**:
-  * `type` (string): Lọc theo loại (`IN`, `OUT`, `ADJUST`)
-  * `from` (string): Ngày bắt đầu
-  * `to` (string): Ngày kết thúc
-  * `page` (number): Số trang
-* **Response thành công (200 OK)**:
+  * `type` (string): Filter by type (`IN`, `OUT`, `ADJUST`)
+  * `from` (string): Start date
+  * `to` (string): End date
+  * `page` (number): Page number
+* **Successful Response (200 OK)**:
   ```json
   {
     "items": [
@@ -281,7 +281,7 @@
         "product_id": 1,
         "type": "IN",
         "quantity": 5,
-        "reason": "Nhập hàng bổ sung",
+        "reason": "Additional stock received",
         "created_at": "2026-10-27T13:00:00Z"
       }
     ],
@@ -289,4 +289,4 @@
     "page": 1
   }
   ```
-* **Mã lỗi có thể trả**: `400`, `401`, `403`
+* **Possible Error Codes**: `400`, `401`, `403`

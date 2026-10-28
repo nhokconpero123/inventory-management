@@ -5,17 +5,17 @@ import { openDb, applySchema } from '../src/db/connection';
 import { createApp } from '../src/app';
 
 
-// Đảm bảo luôn có secret khi chạy test, kể cả khi vitest.config.ts thiếu
+// Ensure tests always have a secret, even when vitest.config.ts does not provide one.
 process.env.JWT_SECRET ??= 'test-secret-test-secret-test-secret-1234';
 
-/** App mới + DB :memory: sạch cho mỗi test. */
+/** Create a new app and clean :memory: database for each test. */
 export function makeApp() {
   const db = openDb(':memory:');
   applySchema(db);
   return { db, app: createApp(db) };
 }
 
-/** Tạo user trực tiếp trong DB (cost bcrypt thấp cho test chạy nhanh). Trả về id. */
+/** Insert a user directly into the database (low bcrypt cost keeps tests fast). Returns the ID. */
 export function addUser(
   db: Database.Database,
   o: { email: string; role?: 'admin' | 'staff'; password?: string; isActive?: 0 | 1 },
@@ -27,13 +27,13 @@ export function addUser(
   return Number(r.lastInsertRowid);
 }
 
-/** Header Authorization hợp lệ cho một role. */
+/** Create a valid Authorization header for a role. */
 export function authHeader(role: 'admin' | 'staff', id = 1) {
   const token = jwt.sign({ role }, process.env.JWT_SECRET!, { subject: String(id), expiresIn: '1h' });
   return `Bearer ${token}`;
 }
 
-/** Tạo sản phẩm trực tiếp trong DB cho test (bỏ qua API vì Bước 7 mới làm). Trả về id. */
+/** Insert a product directly into the database for tests (bypasses the API because step 7 is not implemented yet). Returns the ID. */
 export function addProduct(
   db: Database.Database,
   o: { sku?: string; name?: string; quantity?: number; min?: number; isActive?: 0 | 1 } = {},

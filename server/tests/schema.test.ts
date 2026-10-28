@@ -9,13 +9,13 @@ beforeEach(() => {
   applySchema(db);
 });
 
-it('CHECK chặn tồn kho âm', () => {
+it('CHECK prevents negative stock', () => {
   const insert = () =>
     db.prepare("INSERT INTO products (sku, name, quantity) VALUES ('A1', 'Test', -1)").run();
   expect(insert).toThrow();
 });
 
-it('sổ cái stock_movements bất biến (cấm UPDATE và DELETE)', () => {
+it('stock_movements ledger is immutable (UPDATE and DELETE are prohibited)', () => {
   db.prepare("INSERT INTO products (sku, name) VALUES ('A1', 'Test')").run();
   db.prepare(
     `INSERT INTO stock_movements (product_id, type, quantity_change, quantity_after, idempotency_key)
@@ -26,11 +26,11 @@ it('sổ cái stock_movements bất biến (cấm UPDATE và DELETE)', () => {
   expect(() => db.prepare('DELETE FROM stock_movements').run()).toThrow();
 });
 
-it('foreign key được bật', () => {
+it('foreign keys are enabled', () => {
   const insert = () =>
     db.prepare(
       `INSERT INTO stock_movements (product_id, type, quantity_change, quantity_after, idempotency_key)
        VALUES (999, 'IN', 1, 1, 'k2')`
     ).run();
-  expect(insert).toThrow(); // product_id 999 không tồn tại
+  expect(insert).toThrow(); // product_id 999 does not exist.
 });

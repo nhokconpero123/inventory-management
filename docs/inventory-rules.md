@@ -1,24 +1,24 @@
-# Quy Tắc Quản Lý Tồn Kho (Inventory Rules)
+# Inventory Management Rules
 
-## 1. Tồn kho không âm
-- Số lượng tồn kho (`quantity`) của sản phẩm không bao giờ được phép nhỏ hơn 0.
-- Nếu thao tác xuất kho (`OUT`) hoặc điều chỉnh (`ADJUST`) làm tồn kho xuống dưới 0, hệ thống sẽ từ chối giao dịch và trả về mã lỗi **409 Conflict** (thiếu tồn kho).
+## 1. Stock cannot be negative
+- A product's stock quantity (`quantity`) can never be less than 0.
+- If stock out (`OUT`) or an adjustment (`ADJUST`) would reduce stock below 0, the system rejects the transaction and returns **409 Conflict** (insufficient stock).
 
-## 2. Ý nghĩa loại biến động (Movement Types)
-- **`IN` (Nhập kho)**: Tăng thêm số lượng tồn kho của sản phẩm. (Thực hiện: Staff+)
-- **`OUT` (Xuất kho)**: Giảm bớt số lượng tồn kho của sản phẩm. (Thực hiện: Staff+)
-- **`ADJUST` (Điều chỉnh)**: Tăng hoặc giảm số lượng tồn kho để đồng bộ với thực tế sau kiểm kê. **Chỉ Admin** mới có quyền thực hiện.
+## 2. Movement types
+- **`IN` (Stock in)**: Increases a product's stock quantity. (Available to: Staff+)
+- **`OUT` (Stock out)**: Decreases a product's stock quantity. (Available to: Staff+)
+- **`ADJUST` (Adjust)**: Increases or decreases stock to match the actual quantity after an inventory count. **Only Admin** can perform this action.
 
-## 3. Cảnh báo tồn kho thấp
-- Khi tồn kho của sản phẩm giảm xuống mức **`quantity <= min_quantity`**, sản phẩm được coi là sắp hết hàng.
-- Danh sách này có thể truy xuất riêng qua API `GET /products/low-stock` hoặc bộ lọc `low_stock=1` tại `GET /products`.
+## 3. Low-stock alerts
+- A product is considered low on stock when its quantity reaches **`quantity <= min_quantity`**.
+- This list is available through the `GET /products/low-stock` API or the `low_stock=1` filter on `GET /products`.
 
-## 4. Idempotency Key (Tránh trùng lặp giao dịch)
-- Mọi request tạo biến động kho `POST /products/:id/movements` **bắt buộc** truyền header `Idempotency-Key`.
-- **Cơ chế xử lý**:
-  - Khi gửi request với key mới: Hệ thống tạo giao dịch biến động mới và trả về mã **201 Created**.
-  - Khi gửi lại request với key đã tồn tại trong hệ thống: Hệ thống không tạo thêm giao dịch mới mà trả lại dữ liệu giao dịch cũ kèm mã **200 OK**.
+## 4. Idempotency key (preventing duplicate transactions)
+- Every request that creates a stock movement with `POST /products/:id/movements` **must** include the `Idempotency-Key` header.
+- **How it works**:
+  - When a request uses a new key, the system creates a stock movement and returns **201 Created**.
+  - When a request reuses a key already in the system, the system does not create another movement. It returns the existing movement with **200 OK**.
 
-## 5. Sổ cái bất biến (Immutable Ledger)
-- Toàn bộ lịch sử biến động kho (`movements`) được lưu trữ dưới dạng sổ cái bất biến: **không hỗ trợ sửa (UPDATE) hoặc xóa (DELETE)**.
-- Mọi sự thay đổi về tồn kho sản phẩm phải được thực hiện thông qua việc tạo mới một bản ghi biến động (`movement`).
+## 5. Immutable ledger
+- All stock movement history (`movements`) is stored in an immutable ledger: **updates (UPDATE) and deletes (DELETE) are not supported**.
+- Every change to a product's stock must be made by creating a new movement record (`movement`).

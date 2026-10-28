@@ -15,18 +15,18 @@ const STATUS: Record<ErrorCode, number> = {
   INSUFFICIENT_STOCK: 409,
 };
 
-/** Ném lỗi nghiệp vụ ở bất kỳ đâu: throw new AppError('CONFLICT') */
+/** Throw a business error from anywhere: throw new AppError('CONFLICT'). */
 export class AppError extends Error {
   constructor(public code: ErrorCode, message?: string) {
     super(message ?? code);
   }
 }
 
-/** Middleware cuối cùng: chuyển mọi lỗi thành { error: "MÃ_LỖI" } theo api-spec.md */
+/** Final middleware: convert all errors to { error: "ERROR_CODE" } as specified in api-spec.md. */
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof AppError) return res.status(STATUS[err.code]).json({ error: err.code });
   if (err instanceof ZodError) return res.status(400).json({ error: 'VALIDATION' });
-  if (err?.type === 'entity.parse.failed') return res.status(400).json({ error: 'VALIDATION' }); // JSON hỏng
+  if (err?.type === 'entity.parse.failed') return res.status(400).json({ error: 'VALIDATION' }); // Malformed JSON.
   console.error(err);
   res.status(500).json({ error: 'INTERNAL' });
 };

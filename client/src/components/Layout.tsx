@@ -8,7 +8,7 @@ export default function Layout() {
 
   const navItems = [
     {
-      name: 'Tổng quan',
+      name: 'Overview',
       path: '/',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,7 +22,7 @@ export default function Layout() {
       ),
     },
     {
-      name: 'Sản phẩm',
+      name: 'Products',
       path: '/products',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@ export default function Layout() {
       ),
     },
     {
-      name: 'Lịch sử',
+      name: 'History',
       path: '/movements',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,13 +73,13 @@ export default function Layout() {
             <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
               K
             </div>
-            <span className="font-bold text-gray-900 text-base">Quản lý kho</span>
+            <span className="font-bold text-gray-900 text-base">Inventory</span>
           </div>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
             className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-            aria-label="Đóng menu"
+            aria-label="Close menu"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -115,7 +115,7 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
             K
           </div>
-          <span className="font-bold text-gray-900 text-base">Quản lý kho</span>
+          <span className="font-bold text-gray-900 text-base">Inventory</span>
         </div>
 
         <nav className="p-4 space-y-1.5 flex-1">
@@ -148,14 +148,14 @@ export default function Layout() {
               type="button"
               onClick={() => setMobileMenuOpen(true)}
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg md:hidden"
-              aria-label="Mở menu"
+              aria-label="Open menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <span className="font-semibold text-gray-800 text-sm sm:text-base md:hidden">
-              Hệ thống kho
+              Inventory system
             </span>
           </div>
 
@@ -172,7 +172,7 @@ export default function Layout() {
                       : 'bg-blue-100 text-blue-700'
                   }`}
                 >
-                  {session?.role === 'admin' ? 'Quản trị viên' : 'Nhân viên'}
+                  {session?.role === 'admin' ? 'Admin' : 'Staff'}
                 </span>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function Layout() {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              <span>Đăng xuất</span>
+              <span>Sign out</span>
             </button>
           </div>
         </header>
@@ -203,4 +203,3 @@ export default function Layout() {
     </div>
   );
 }
-

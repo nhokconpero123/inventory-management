@@ -6,7 +6,7 @@ export interface Category {
   name: string;
 }
 
-/** Repo chỉ chứa SQL. Không biết gì về Express/HTTP. */
+/** This repository contains only SQL and has no knowledge of Express or HTTP. */
 export function createCategoriesRepo(db: Database.Database) {
   const list = db.prepare('SELECT id, name FROM categories ORDER BY name');
   const insert = db.prepare('INSERT INTO categories (name) VALUES (?) RETURNING id, name');
@@ -18,7 +18,7 @@ export function createCategoriesRepo(db: Database.Database) {
       try {
         return insert.get(name) as Category;
       } catch (e: any) {
-        // Trùng tên (cột name có UNIQUE) → 409
+        // Duplicate name (the name column is UNIQUE) returns 409.
         if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') throw new AppError('CONFLICT');
         throw e;
       }

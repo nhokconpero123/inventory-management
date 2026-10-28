@@ -3,7 +3,7 @@ import { it, expect } from 'vitest';
 import { createApp } from '../src/app';
 import { openDb, applySchema } from '../src/db/connection';
 
-it('GET /health trả 200', async () => {
+it('GET /health returns 200', async () => {
   const db = openDb(':memory:');
   applySchema(db);
   const res = await request(createApp(db)).get('/health');
