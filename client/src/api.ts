@@ -1,6 +1,6 @@
 import type { Role } from './types';
 
-// Dev: '/api' (proxy của Vite). Production: đặt VITE_API_URL trỏ về backend.
+// Dev: '/api' (Vite proxy). Production: set VITE_API_URL to the backend URL.
 const BASE: string = import.meta.env.VITE_API_URL ?? '/api';
 const STORAGE_KEY = 'ims_session';
 
@@ -10,7 +10,7 @@ export interface Session {
   email: string;
 }
 
-/** Token lưu sessionStorage: mất khi đóng tab. Đánh đổi cho MVP: dễ bị XSS đọc, cần ghi vào README. */
+/** Token lives in sessionStorage: cleared when the tab closes. MVP trade-off: readable by XSS, documented in the README. */
 export function getSession(): Session | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -25,7 +25,7 @@ export function setSession(s: Session | null) {
     if (s) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(s));
     else sessionStorage.removeItem(STORAGE_KEY);
   } catch {
-    /* bỏ qua nếu trình duyệt chặn storage */
+    /* ignore if the browser blocks storage */
   }
 }
 
@@ -48,7 +48,7 @@ interface Options {
   query?: Record<string, string | number | undefined | null>;
 }
 
-/** Gọi API: tự gắn Bearer token, trả JSON, lỗi ném ApiError. 401 (trừ login) → xóa phiên và phát sự kiện. */
+/** Call the API: attaches the Bearer token, returns JSON, throws ApiError on failure. A 401 (except on login) clears the session and fires an event. */
 export async function api<T>(path: string, opts: Options = {}): Promise<T> {
   const url = new URL(BASE + path, window.location.origin);
   for (const [k, v] of Object.entries(opts.query ?? {})) {
@@ -84,18 +84,18 @@ export async function api<T>(path: string, opts: Options = {}): Promise<T> {
 }
 
 const MESSAGES: Record<string, string> = {
-  VALIDATION: 'Dữ liệu không hợp lệ.',
-  UNAUTHORIZED: 'Phiên đăng nhập đã hết hạn.',
-  INVALID_CREDENTIALS: 'Sai email hoặc mật khẩu.',
-  FORBIDDEN: 'Bạn không có quyền thực hiện thao tác này.',
-  NOT_FOUND: 'Không tìm thấy dữ liệu.',
-  CONFLICT: 'Dữ liệu bị trùng (SKU, email hoặc tên đã tồn tại).',
-  INSUFFICIENT_STOCK: 'Không đủ tồn kho.',
-  NETWORK: 'Không kết nối được máy chủ. Thử lại sau.',
+  VALIDATION: 'Invalid data.',
+  UNAUTHORIZED: 'Your session has expired.',
+  INVALID_CREDENTIALS: 'Incorrect email or password.',
+  FORBIDDEN: 'You do not have permission to do this.',
+  NOT_FOUND: 'Data not found.',
+  CONFLICT: 'Duplicate data (SKU, email or name already exists).',
+  INSUFFICIENT_STOCK: 'Insufficient stock.',
+  NETWORK: 'Cannot reach the server. Please try again later.',
 };
 
-/** Chuyển lỗi thành câu tiếng Việt để hiển thị cho người dùng. */
+/** Turn an error into an English message for the user. */
 export function errorMessage(e: unknown): string {
-  if (e instanceof ApiError) return MESSAGES[e.code] ?? 'Có lỗi xảy ra.';
-  return 'Có lỗi xảy ra.';
+  if (e instanceof ApiError) return MESSAGES[e.code] ?? 'Something went wrong.';
+  return 'Something went wrong.';
 }
